@@ -11,6 +11,7 @@ from openai_client import OpenAIClient
 
 # Import hanldlers
 from handlers.start import start_command, finish_callback
+from handlers.random_fact import random_command, another_fact_callback
 
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,8 @@ async def handle_command_callback(update: Update, context):
     query.message.text = command
 
     # TODO: add commands handlers
-
+    if command == '/random':
+        await random_command(query, context)
 
 def main():
     """Start the bot."""
@@ -52,7 +54,7 @@ def main():
 
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
-
+    application.add_handler(CommandHandler('random', random_command))
 
 
     # Start polling
