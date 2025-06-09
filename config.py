@@ -58,7 +58,7 @@ MOVIE_GENRES = [
     'Romance', 'Thriller', 'Western', 'Documentary', 'Animation'
 ]
 
-BOOk_GENRES = [
+BOOK_GENRES = [
     'Fiction', 'Non-fiction', 'Mystery', 'Sci-Fi', 'Fantasy',
     'Biography', 'History', 'Self-help'
 ]

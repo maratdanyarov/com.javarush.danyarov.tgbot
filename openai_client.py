@@ -37,10 +37,10 @@ class OpenAIClient:
             logger.error(f"OpenAI API error: {e}")
             return "I apologize, but I have encountered an error. Please try again later."
 
-    async def generate_conversational_response(self,
-                                               messages: List[Dict[str, str]],
-                                               temperature: float = TEMPERATURE,
-                                               max_tokens: int = MAX_TOKENS) -> str:
+    async def generate_conversation_response(self,
+                                             messages: List[Dict[str, str]],
+                                             temperature: float = TEMPERATURE,
+                                             max_tokens: int = MAX_TOKENS) -> str:
         """Generate a response for ongoing conversation."""
         try:
             response = await self.client.chat.completions.create(

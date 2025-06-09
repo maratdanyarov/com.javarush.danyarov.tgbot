@@ -1,7 +1,7 @@
 """Inline keyboard layouts for the bot."""
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from config import (QUIZ_TOPICS, PERSONALITIES, RECOMMENDATION_CATEGORIES, MOVIE_GENRES, BOOk_GENRES)
+from config import (QUIZ_TOPICS, PERSONALITIES, RECOMMENDATION_CATEGORIES, MOVIE_GENRES, BOOK_GENRES)
 
 
 def get_start_keyboard() -> InlineKeyboardMarkup:
