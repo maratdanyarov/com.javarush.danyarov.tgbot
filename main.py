@@ -15,7 +15,8 @@ from handlers.random_fact import random_command, another_fact_callback
 from handlers.gpt import gpt_command, handle_gpt_message, cancel_gpt, GPT_CHAT
 from handlers.talk import (talk_command, personality_selected, handle_talk_message,
                            change_personality, cancel_talk, TALK_CHAT)
-
+from handlers.quiz import (quiz_command, topic_selected, handle_quiz_answer,
+                           next_question, change_topic, cancel_quiz, QUIZ_ANSWER)
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,9 @@ async def handle_command_callback(update: Update, context):
         await gpt_command(query, context)
     elif command == '/talk':
         await talk_command(query, context)
+    elif command == '/quiz':
+        await quiz_command(query, context)
+
 
 def main():
     """Start the bot."""
@@ -67,7 +71,7 @@ def main():
     gpt_handler = ConversationHandler(
         entry_points=[CommandHandler("gpt", gpt_command)],
         states={
-            GPT_CHAT:[
+            GPT_CHAT: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_gpt_message),
                 CallbackQueryHandler(finish_callback, pattern="^finish$")
             ]
@@ -80,7 +84,7 @@ def main():
     talk_handler = ConversationHandler(
         entry_points=[CommandHandler("talk", talk_command)],
         states={
-            TALK_CHAT:[
+            TALK_CHAT: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_talk_message),
                 CallbackQueryHandler(finish_callback, pattern="^finish$"),
                 CallbackQueryHandler(change_personality, pattern="^change_personality$")
@@ -89,6 +93,21 @@ def main():
         fallbacks=[CommandHandler("cancel", cancel_talk)]
     )
     application.add_handler(talk_handler)
+
+    # Quiz conversation handler
+    quiz_handler = ConversationHandler(
+        entry_points=[CommandHandler("quiz", quiz_command)],
+        states={
+            QUIZ_ANSWER: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_quiz_answer),
+                CallbackQueryHandler(next_question, pattern="^quiz_next$"),
+                CallbackQueryHandler(change_topic, pattern="^quiz_change_topic$"),
+                CallbackQueryHandler(finish_callback, pattern="^finish$"),
+            ]
+        },
+        fallbacks=[CommandHandler("cancel", cancel_quiz)]
+    )
+    application.add_handler(quiz_handler)
 
     # Start polling
     logger.info("Starting bot...")

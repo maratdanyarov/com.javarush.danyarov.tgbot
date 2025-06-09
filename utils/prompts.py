@@ -41,6 +41,19 @@ def get_quiz_prompt(topic: str, previous_questions: list = None) -> str:
     Make sure the answer is brief (1-5 words when possible).{excluded}"""
 
 
+# Quiz validation prompt
+def get_quiz_validation_prompt(question: str, correct_answer: str,
+                               user_answer: str) -> str:
+    """Generate prompt for answer validation."""
+    return f"""Question: {question}
+    Correct answer: {correct_answer}
+    User's answer: {user_answer}
+
+    Determine if the user's answer is correct. Consider typos, different phrasings, 
+    and partial answers. Respond with only 'Correct' or 'Incorrect' followed by 
+    a brief explanation."""
+
+
 # Translation prompt
 def get_translation_prompt(text: str, target_language: str) -> str:
     """Generate prompt for translation."""

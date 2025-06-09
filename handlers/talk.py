@@ -3,6 +3,7 @@ import logging
 import os
 import json
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 from utils.keyboards import get_personalities_keyboard, get_talk_finish_keyboard
 from utils.prompts import PERSONALITY_PROMPTS
@@ -30,14 +31,14 @@ async def talk_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(
                 "💬 **Talk to a Historical Figure**\n\nChoose a personality to chat with:",
                 reply_markup=get_personalities_keyboard(),
-                parse_mode='Markdown'
+                parse_mode=ParseMode.MARKDOWN
             )
     except Exception as e:
         logger.error(f"Error sending image: {e}")
         await update.message.reply_text(
             "💬 **Talk to a Historical Figure**\n\nChoose a personality to chat with:",
             reply_markup=get_personalities_keyboard(),
-            parse_mode='Markdown'
+            parse_mode=ParseMode.MARKDOWN
         )
 
 
@@ -67,13 +68,13 @@ async def personality_selected(update: Update, context: ContextTypes.DEFAULT_TYP
         await query.message.reply_text(
             f"📜 Continuing your conversation with **{personality_name}**...\n\nType your message:",
             reply_markup=get_talk_finish_keyboard(),
-            parse_mode='Markdown'
+            parse_mode=ParseMode.MARKDOWN
         )
     else:
         await query.message.reply_text(
             f"🎭 You're now talking to **{personality_name}**!\n\nType your message:",
             reply_markup=get_talk_finish_keyboard(),
-            parse_mode='Markdown'
+            parse_mode=ParseMode.MARKDOWN
         )
 
     return TALK_CHAT
@@ -148,7 +149,7 @@ async def change_personality(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await query.message.reply_text(
         "💬 **Choose a new personality to chat with:**",
         reply_markup=get_personalities_keyboard(),
-        parse_mode='Markdown'
+        parse_mode=ParseMode.MARKDOWN
     )
 
     return ConversationHandler.END

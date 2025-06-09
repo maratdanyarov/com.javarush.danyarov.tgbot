@@ -2,6 +2,7 @@
 import logging
 import os
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 from utils.keyboards import get_random_fact_keyboard
 from utils.prompts import RANDOM_FACT_PROMPT
@@ -41,7 +42,7 @@ async def random_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await message.reply_text(
         f"💡 **Did you know?**\n\n{fact}",
         reply_markup=get_random_fact_keyboard(),
-        parse_mode='Markdown'
+        parse_mode=ParseMode.MARKDOWN
     )
 
 
@@ -65,5 +66,5 @@ async def another_fact_callback(update: Update, context: ContextTypes.DEFAULT_TY
     await query.message.reply_text(
         f"💡 **Did you know?**\n\n{fact}",
         reply_markup=get_random_fact_keyboard(),
-        parse_mode='Markdown'
+        parse_mode=ParseMode.MARKDOWN
     )

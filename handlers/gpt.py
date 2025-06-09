@@ -2,6 +2,7 @@
 import logging
 import os
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 from utils.keyboards import get_finish_keyboard
 from config import IMAGES
@@ -31,14 +32,14 @@ async def gpt_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(
                 "🤖 **ChatGPT Interface**\n\nI'm ready to help! Send me any question or message, and I'll provide a thoughtful response.\n\nType your message below:",
                 reply_markup=get_finish_keyboard(),
-                parse_mode='Markdown'
+                parse_mode=ParseMode.MARKDOWN
             )
     except Exception as e:
         logger.error(f"Error sending image: {e}")
         await update.message.reply_text(
             "🤖 **ChatGPT Interface**\n\nI'm ready to help! Send me any question or message, and I'll provide a thoughtful response.\n\nType your message below:",
             reply_markup=get_finish_keyboard(),
-            parse_mode='Markdown'
+            parse_mode=ParseMode.MARKDOWN
         )
 
     return GPT_CHAT
