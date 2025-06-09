@@ -12,6 +12,7 @@ from openai_client import OpenAIClient
 # Import hanldlers
 from handlers.start import start_command, finish_callback
 from handlers.random_fact import random_command, another_fact_callback
+from handlers.gpt import gpt_command, handle_gpt_message, cancel_gpt, GPT_CHAT
 
 
 logger = logging.getLogger(__name__)
@@ -40,9 +41,11 @@ async def handle_command_callback(update: Update, context):
 
     query.message.text = command
 
-    # TODO: add commands handlers
+    # TODO: add all commands handlers
     if command == '/random':
         await random_command(query, context)
+    elif command == '/gpt':
+        await gpt_command(query, context)
 
 def main():
     """Start the bot."""
@@ -54,7 +57,20 @@ def main():
 
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
-    application.add_handler(CommandHandler('random', random_command))
+    application.add_handler(CommandHandler("random", random_command))
+
+    # GPT conversation handler
+    gpt_handler = ConversationHandler(
+        entry_points=[CommandHandler("gpt", gpt_command)],
+        states={
+            GPT_CHAT:[
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_gpt_message),
+                CallbackQueryHandler(finish_callback, pattern="^finish$")
+            ]
+        },
+        fallbacks=[CommandHandler("cancel", cancel_gpt)]
+    )
+    application.add_handler(gpt_handler)
 
 
     # Start polling
