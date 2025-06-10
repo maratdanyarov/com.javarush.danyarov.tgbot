@@ -102,7 +102,7 @@ def get_recommendation_category_keyboard() -> InlineKeyboardMarkup:
 
 def get_genre_keyboard(category: str) -> InlineKeyboardMarkup:
     """Get keyboard for genre selection."""
-    genres = MOVIE_GENRES if category == 'movies' else BOOk_GENRES
+    genres = MOVIE_GENRES if category == 'movies' else BOOK_GENRES
     keyboard = []
 
     for i in range(0, len(genres), 2):

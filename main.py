@@ -3,7 +3,7 @@ import logging
 import asyncio
 from telegram import Update
 from telegram.ext import (Application, CommandHandler, MessageHandler,
-                          CallbackQueryHandler, ConversationHandler, filters)
+                         CallbackQueryHandler, ConversationHandler, filters)
 
 from config import TELEGRAM_BOT_TOKEN
 from database import Database
@@ -14,9 +14,15 @@ from handlers.start import start_command, finish_callback
 from handlers.random_fact import random_command, another_fact_callback
 from handlers.gpt import gpt_command, handle_gpt_message, cancel_gpt, GPT_CHAT
 from handlers.talk import (talk_command, personality_selected, handle_talk_message,
-                           change_personality, cancel_talk, TALK_CHAT)
+                          change_personality, cancel_talk, TALK_CHAT)
 from handlers.quiz import (quiz_command, topic_selected, handle_quiz_answer,
-                           next_question, change_topic, cancel_quiz, QUIZ_ANSWER)
+                          next_question, change_topic, cancel_quiz, QUIZ_ANSWER)
+from handlers.translate import (translate_command, translation_mode_selected,
+                               handle_translation, change_translation_mode,
+                               cancel_translate, TRANSLATE_TEXT)
+from handlers.recommend import (recommend_command, category_selected, genre_selected,
+                               handle_dislike, handle_more_recommendations,
+                               recommendation_back)
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +46,11 @@ async def handle_command_callback(update: Update, context):
     query = update.callback_query
     await query.answer()
 
-    command = query.data.replace('cmd_', "/")
+    command = query.data.replace('cmd_', '/')
 
+    # Create a fake message object to trigger command handlers
     query.message.text = command
 
-    # TODO: add all commands handlers
     if command == '/random':
         await random_command(query, context)
     elif command == '/gpt':
@@ -53,6 +59,10 @@ async def handle_command_callback(update: Update, context):
         await talk_command(query, context)
     elif command == '/quiz':
         await quiz_command(query, context)
+    elif command == '/translate':
+        await translate_command(query, context)
+    elif command == '/recommend':
+        await recommend_command(query, context)
 
 
 def main():
@@ -102,17 +112,55 @@ def main():
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_quiz_answer),
                 CallbackQueryHandler(next_question, pattern="^quiz_next$"),
                 CallbackQueryHandler(change_topic, pattern="^quiz_change_topic$"),
-                CallbackQueryHandler(finish_callback, pattern="^finish$"),
+                CallbackQueryHandler(finish_callback, pattern="^finish$")
             ]
         },
         fallbacks=[CommandHandler("cancel", cancel_quiz)]
     )
     application.add_handler(quiz_handler)
 
+    # Translate conversation handler
+    translate_handler = ConversationHandler(
+        entry_points=[CommandHandler("translate", translate_command)],
+        states={
+            TRANSLATE_TEXT: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_translation),
+                CallbackQueryHandler(change_translation_mode, pattern="^translate_change$"),
+                CallbackQueryHandler(finish_callback, pattern="^finish$")
+            ]
+        },
+        fallbacks=[CommandHandler("cancel", cancel_translate)]
+    )
+    application.add_handler(translate_handler)
+
+    # Recommendation handlers
+    application.add_handler(CommandHandler("recommend", recommend_command))
+
+    # Callback query handlers
+    application.add_handler(CallbackQueryHandler(handle_command_callback, pattern="^cmd_"))
+    application.add_handler(CallbackQueryHandler(finish_callback, pattern="^finish$"))
+    application.add_handler(CallbackQueryHandler(another_fact_callback, pattern="^another_fact$"))
+
+    # Talk callbacks
+    application.add_handler(CallbackQueryHandler(personality_selected, pattern="^talk_"))
+
+    # Quiz callbacks
+    application.add_handler(CallbackQueryHandler(topic_selected, pattern="^quiz_topic_"))
+
+    # Translate callbacks
+    application.add_handler(CallbackQueryHandler(translation_mode_selected, pattern="^translate_"))
+
+    # Recommendation callbacks
+    application.add_handler(CallbackQueryHandler(category_selected, pattern="^rec_cat_"))
+    application.add_handler(CallbackQueryHandler(genre_selected, pattern="^rec_genre_"))
+    application.add_handler(CallbackQueryHandler(handle_dislike, pattern="^rec_dislike$"))
+    application.add_handler(CallbackQueryHandler(handle_more_recommendations, pattern="^rec_more$"))
+    application.add_handler(CallbackQueryHandler(recommendation_back, pattern="^rec_back$"))
+
     # Start polling
     logger.info("Starting bot...")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
