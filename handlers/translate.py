@@ -40,6 +40,17 @@ async def translate_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
+async def translate_command_from_callback(query, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /translate command from callback query."""
+    logger.info(f"User {query.from_user.id} started translator from button")
+
+    await query.message.reply_text(
+        "🌐 **Translator**\n\nChoose translation mode:",
+        reply_markup=get_language_keyboard(),
+        parse_mode='Markdown'
+    )
+
+
 async def translation_mode_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle translation mode selection."""
     query = update.callback_query

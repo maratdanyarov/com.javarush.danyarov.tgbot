@@ -6,6 +6,7 @@ from config import DATABASE_PATH
 
 logger = logging.getLogger(__name__)
 
+
 class Database:
     """Async SQLite database handler."""
 
@@ -13,7 +14,7 @@ class Database:
         self.db_path = db_path
 
     async def initialize(self):
-        """Initialize the database tables."""
+        """Initialize database tables."""
         async with aiosqlite.connect(self.db_path) as db:
             # Quiz scores table
             await db.execute('''
@@ -22,14 +23,14 @@ class Database:
                     topic TEXT,
                     correct_answers INTEGER,
                     total_questions INTEGER,
-                    timestamp DATATIME DEFAULT CURRENT_TIMESTAMP,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (user_id, topic, timestamp)
                 )
             ''')
 
             # User conversations table (for personality talks)
             await db.execute('''
-                CREATE TABLE IF NOT EXISTS conversation (
+                CREATE TABLE IF NOT EXISTS conversations (
                     user_id INTEGER PRIMARY KEY,
                     personality TEXT,
                     context TEXT
@@ -52,23 +53,23 @@ class Database:
             await db.execute('''
                 CREATE TABLE IF NOT EXISTS user_preferences (
                     user_id INTEGER,
-                    prefernces_type TEXT,
-                    preferences_value TEXT,
-                    PRIMARY KEY (user_id, prefernces_type)
+                    preference_type TEXT,
+                    preference_value TEXT,
+                    PRIMARY KEY (user_id, preference_type)
                 )
             ''')
 
             await db.commit()
-            logger.info("Database successfully initialized")
+            logger.info("Database initialized successfully")
 
     async def save_quiz_score(self, user_id: int, topic: str,
-                              correct_answers: int, total_questions: int):
+                            correct: int, total: int):
         """Save quiz score for a user."""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute('''
                 INSERT INTO quiz_scores (user_id, topic, correct_answers, total_questions)
-                VALUES(?, ?, ?, ?)
-            ''', (user_id, topic, correct_answers, total_questions))
+                VALUES (?, ?, ?, ?)
+            ''', (user_id, topic, correct, total))
             await db.commit()
 
     async def get_quiz_stats(self, user_id: int, topic: Optional[str] = None) -> Dict:
@@ -77,7 +78,7 @@ class Database:
             if topic:
                 cursor = await db.execute('''
                     SELECT SUM(correct_answers), SUM(total_questions)
-                    FROM quiz_scores 
+                    FROM quiz_scores
                     WHERE user_id = ? AND topic = ?
                 ''', (user_id, topic))
             else:
@@ -96,12 +97,13 @@ class Database:
                 }
             return {'correct': 0, 'total': 0, 'percentage': 0}
 
-    async def save_conversation_context(self, user_id: int, personality: str, context: str):
+    async def save_conversation_context(self, user_id: int, personality: str,
+                                      context: str):
         """Save conversation context for personality talk."""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute('''
-                INSERT OR REPLACE INTO conversation (user_id, personality, context)
-                VALUES(?, ?, ?)
+                INSERT OR REPLACE INTO conversations (user_id, personality, context)
+                VALUES (?, ?, ?)
             ''', (user_id, personality, context))
             await db.commit()
 
@@ -109,7 +111,7 @@ class Database:
         """Get conversation context for a user."""
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute('''
-                SELECT personality, context FROM conversation
+                SELECT personality, context FROM conversations
                 WHERE user_id = ?
             ''', (user_id,))
             row = await cursor.fetchone()
@@ -121,24 +123,23 @@ class Database:
         """Clear conversation context for a user."""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute('''
-                DELETE FROM conversation WHERE user_id = ?
-            ''', (user_id))
+                DELETE FROM conversations WHERE user_id = ?
+            ''', (user_id,))
             await db.commit()
 
-
     async def save_recommendation(self, user_id: int, category: str,
-                                   item_name: str, liked: bool):
-        """Save recommendationn feedback."""
+                                item_name: str, liked: bool):
+        """Save recommendation feedback."""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute('''
-                INSERT OR REPLACE INTO recommendations
+                INSERT OR REPLACE INTO recommendations 
                 (user_id, category, item_name, liked)
-                VALUES(?, ?, ?, ?)
+                VALUES (?, ?, ?, ?)
             ''', (user_id, category, item_name, liked))
             await db.commit()
 
     async def get_disliked_recommendations(self, user_id: int,
-                                           category: str) -> List[str]:
+                                          category: str) -> List[str]:
         """Get list of disliked recommendations."""
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute('''
@@ -148,17 +149,18 @@ class Database:
             rows = await cursor.fetchall()
             return [row[0] for row in rows]
 
-    async def save_user_preference(self, user_id: int, pref_type: str, pref_value: str):
-        """Save user preferences."""
+    async def save_user_preference(self, user_id: int, pref_type: str,
+                                 pref_value: str):
+        """Save user preference."""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute('''
-                INSERT OR REPLACE INTO user_preferences
+                INSERT OR REPLACE INTO user_preferences 
                 (user_id, preference_type, preference_value)
-                VALUES(?, ?, ?)
+                VALUES (?, ?, ?)
             ''', (user_id, pref_type, pref_value))
             await db.commit()
 
-    async def get_user_preferences(self, user_id: int, pref_type: str) -> Optional[str]:
+    async def get_user_preference(self, user_id: int, pref_type: str) -> Optional[str]:
         """Get user preference."""
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute('''
@@ -167,4 +169,3 @@ class Database:
             ''', (user_id, pref_type))
             row = await cursor.fetchone()
             return row[0] if row else None
-        

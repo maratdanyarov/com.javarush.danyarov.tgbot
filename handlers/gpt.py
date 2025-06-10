@@ -2,7 +2,6 @@
 import logging
 import os
 from telegram import Update
-from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 from utils.keyboards import get_finish_keyboard
 from config import IMAGES
@@ -32,15 +31,37 @@ async def gpt_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(
                 "🤖 **ChatGPT Interface**\n\nI'm ready to help! Send me any question or message, and I'll provide a thoughtful response.\n\nType your message below:",
                 reply_markup=get_finish_keyboard(),
-                parse_mode=ParseMode.MARKDOWN
+                parse_mode='Markdown'
             )
     except Exception as e:
         logger.error(f"Error sending image: {e}")
         await update.message.reply_text(
-            "🤖 **ChatGPT Interface**\n\nI'm ready to help! Send me any question or message, and I'll provide a thoughtful response.\n\nType your message below:",
+            "🤖 **ChatGPT Interface**\n\nI'm ready to help! "
+            "Send me any question or message, and I'll provide a thoughtful response.\n\nType your message below:",
             reply_markup=get_finish_keyboard(),
-            parse_mode=ParseMode.MARKDOWN
+            parse_mode='Markdown'
         )
+
+    return GPT_CHAT
+
+
+async def gpt_command_from_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /gpt command from callback query."""
+    query = update.callback_query
+    await query.answer()
+
+    logger.info(f"User {query.from_user.id} started GPT chat from button")
+
+    # Set conversation state
+    context.user_data['state'] = 'gpt_chat'
+
+    await query.message.reply_text(
+        "🤖 **ChatGPT Interface**\n\nI'm ready to help! "
+        "Send me any question or message, and I'll provide a thoughtful response."
+        "\n\nType your message below:",
+        reply_markup=get_finish_keyboard(),
+        parse_mode='Markdown'
+    )
 
     return GPT_CHAT
 
@@ -73,5 +94,5 @@ async def handle_gpt_message(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 async def cancel_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Cancel GPT conversation."""
-    context.user_date.pop('state', None)
+    context.user_data.pop('state', None)
     return ConversationHandler.END

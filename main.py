@@ -4,26 +4,35 @@ import asyncio
 from telegram import Update
 from telegram.ext import (Application, CommandHandler, MessageHandler,
                          CallbackQueryHandler, ConversationHandler, filters)
-
+from warnings import filterwarnings
+from telegram.warnings import PTBUserWarning
 from config import TELEGRAM_BOT_TOKEN
 from database import Database
 from openai_client import OpenAIClient
 
 # Import handlers
 from handlers.start import start_command, finish_callback
-from handlers.random_fact import random_command, another_fact_callback
-from handlers.gpt import gpt_command, handle_gpt_message, cancel_gpt, GPT_CHAT
-from handlers.talk import (talk_command, personality_selected, handle_talk_message,
+from handlers.random_fact import (random_command, random_command_from_callback,
+                                  another_fact_callback)
+from handlers.gpt import (gpt_command, gpt_command_from_callback,
+                         handle_gpt_message, cancel_gpt, GPT_CHAT)
+from handlers.talk import (talk_command, talk_command_from_callback,
+                          personality_selected, handle_talk_message,
                           change_personality, cancel_talk, TALK_CHAT)
-from handlers.quiz import (quiz_command, topic_selected, handle_quiz_answer,
+from handlers.quiz import (quiz_command, quiz_command_from_callback,
+                          topic_selected, handle_quiz_answer,
                           next_question, change_topic, cancel_quiz, QUIZ_ANSWER)
-from handlers.translate import (translate_command, translation_mode_selected,
-                               handle_translation, change_translation_mode,
-                               cancel_translate, TRANSLATE_TEXT)
-from handlers.recommend import (recommend_command, category_selected, genre_selected,
-                               handle_dislike, handle_more_recommendations,
-                               recommendation_back)
+from handlers.translate import (translate_command, translate_command_from_callback,
+                               translation_mode_selected, handle_translation,
+                               change_translation_mode, cancel_translate, TRANSLATE_TEXT)
+from handlers.recommend import (recommend_command, recommend_command_from_callback,
+                               category_selected, genre_selected, handle_dislike,
+                               handle_more_recommendations, recommendation_back)
 
+filterwarnings(action="ignore", message=r".*CallbackQueryHandler", category=PTBUserWarning)
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
 
@@ -41,30 +50,6 @@ async def post_init(application: Application) -> None:
     logger.info("Bot initialization complete")
 
 
-async def handle_command_callback(update: Update, context):
-    """Handle command callbacks from inline keyboard."""
-    query = update.callback_query
-    await query.answer()
-
-    command = query.data.replace('cmd_', '/')
-
-    # Create a fake message object to trigger command handlers
-    query.message.text = command
-
-    if command == '/random':
-        await random_command(query, context)
-    elif command == '/gpt':
-        await gpt_command(query, context)
-    elif command == '/talk':
-        await talk_command(query, context)
-    elif command == '/quiz':
-        await quiz_command(query, context)
-    elif command == '/translate':
-        await translate_command(query, context)
-    elif command == '/recommend':
-        await recommend_command(query, context)
-
-
 def main():
     """Start the bot."""
     # Create application
@@ -79,20 +64,26 @@ def main():
 
     # GPT conversation handler
     gpt_handler = ConversationHandler(
-        entry_points=[CommandHandler("gpt", gpt_command)],
+        entry_points=[
+            CommandHandler("gpt", gpt_command),
+            CallbackQueryHandler(gpt_command_from_callback, pattern="^cmd_gpt$")
+        ],
         states={
             GPT_CHAT: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_gpt_message),
                 CallbackQueryHandler(finish_callback, pattern="^finish$")
             ]
         },
-        fallbacks=[CommandHandler("cancel", cancel_gpt)]
+        fallbacks=[CommandHandler("cancel", cancel_gpt)],
     )
     application.add_handler(gpt_handler)
 
     # Talk conversation handler
     talk_handler = ConversationHandler(
-        entry_points=[CommandHandler("talk", talk_command)],
+        entry_points=[
+            CommandHandler("talk", talk_command),
+            CallbackQueryHandler(talk_command_from_callback, pattern="^cmd_talk$")
+        ],
         states={
             TALK_CHAT: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_talk_message),
@@ -106,7 +97,10 @@ def main():
 
     # Quiz conversation handler
     quiz_handler = ConversationHandler(
-        entry_points=[CommandHandler("quiz", quiz_command)],
+        entry_points=[
+            CommandHandler("quiz", quiz_command),
+            CallbackQueryHandler(quiz_command_from_callback, pattern="^cmd_quiz$")
+        ],
         states={
             QUIZ_ANSWER: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_quiz_answer),
@@ -121,7 +115,10 @@ def main():
 
     # Translate conversation handler
     translate_handler = ConversationHandler(
-        entry_points=[CommandHandler("translate", translate_command)],
+        entry_points=[
+            CommandHandler("translate", translate_command),
+            CallbackQueryHandler(translate_command_from_callback, pattern="^cmd_translate$")
+        ],
         states={
             TRANSLATE_TEXT: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_translation),
@@ -135,9 +132,10 @@ def main():
 
     # Recommendation handlers
     application.add_handler(CommandHandler("recommend", recommend_command))
+    application.add_handler(CallbackQueryHandler(recommend_command_from_callback, pattern="^cmd_recommend$"))
 
     # Callback query handlers
-    application.add_handler(CallbackQueryHandler(handle_command_callback, pattern="^cmd_"))
+    application.add_handler(CallbackQueryHandler(random_command_from_callback, pattern="^cmd_random$"))
     application.add_handler(CallbackQueryHandler(finish_callback, pattern="^finish$"))
     application.add_handler(CallbackQueryHandler(another_fact_callback, pattern="^another_fact$"))
 

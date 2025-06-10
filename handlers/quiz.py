@@ -41,6 +41,17 @@ async def quiz_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
+async def quiz_command_from_callback(query, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /quiz command from callback query."""
+    logger.info(f"User {query.from_user.id} started quiz from button")
+
+    await query.message.reply_text(
+        "🧠 **Quiz Time!**\n\nChoose a topic to test your knowledge:",
+        reply_markup=get_quiz_topics_keyboard(),
+        parse_mode='Markdown'
+    )
+
+
 async def topic_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle topic selection."""
     query = update.callback_query
