@@ -10,7 +10,7 @@ from config import IMAGES, LANGUAGES
 logger = logging.getLogger(__name__)
 
 # Conversation states
-TRANSLATE_TEXT = 1
+TRANSLATE_TEXT = 4
 
 
 async def translate_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -40,8 +40,11 @@ async def translate_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-async def translate_command_from_callback(query, context: ContextTypes.DEFAULT_TYPE):
+async def translate_command_from_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /translate command from callback query."""
+    query = update.callback_query
+    await query.answer()
+
     logger.info(f"User {query.from_user.id} started translator from button")
 
     await query.message.reply_text(

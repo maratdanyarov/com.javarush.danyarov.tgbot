@@ -74,7 +74,10 @@ def main():
                 CallbackQueryHandler(finish_callback, pattern="^finish$")
             ]
         },
-        fallbacks=[CommandHandler("cancel", cancel_gpt)],
+        fallbacks=[
+            CommandHandler("cancel", cancel_gpt),
+            CallbackQueryHandler(finish_callback, pattern="^finish$")
+        ],
     )
     application.add_handler(gpt_handler)
 
@@ -82,7 +85,8 @@ def main():
     talk_handler = ConversationHandler(
         entry_points=[
             CommandHandler("talk", talk_command),
-            CallbackQueryHandler(talk_command_from_callback, pattern="^cmd_talk$")
+            CallbackQueryHandler(talk_command_from_callback, pattern="^cmd_talk$"),
+            CallbackQueryHandler(personality_selected, pattern="^talk_")
         ],
         states={
             TALK_CHAT: [
@@ -91,7 +95,10 @@ def main():
                 CallbackQueryHandler(change_personality, pattern="^change_personality$")
             ]
         },
-        fallbacks=[CommandHandler("cancel", cancel_talk)]
+        fallbacks=[
+            CommandHandler("cancel", cancel_talk),
+            CallbackQueryHandler(finish_callback, pattern="^finish$")
+        ]
     )
     application.add_handler(talk_handler)
 
@@ -99,7 +106,8 @@ def main():
     quiz_handler = ConversationHandler(
         entry_points=[
             CommandHandler("quiz", quiz_command),
-            CallbackQueryHandler(quiz_command_from_callback, pattern="^cmd_quiz$")
+            CallbackQueryHandler(quiz_command_from_callback, pattern="^cmd_quiz$"),
+            CallbackQueryHandler(topic_selected, pattern="^quiz_topic_")
         ],
         states={
             QUIZ_ANSWER: [
@@ -109,7 +117,10 @@ def main():
                 CallbackQueryHandler(finish_callback, pattern="^finish$")
             ]
         },
-        fallbacks=[CommandHandler("cancel", cancel_quiz)]
+        fallbacks=[
+            CommandHandler("cancel", cancel_quiz),
+            CallbackQueryHandler(finish_callback, pattern="^finish$")
+        ]
     )
     application.add_handler(quiz_handler)
 
@@ -117,7 +128,8 @@ def main():
     translate_handler = ConversationHandler(
         entry_points=[
             CommandHandler("translate", translate_command),
-            CallbackQueryHandler(translate_command_from_callback, pattern="^cmd_translate$")
+            CallbackQueryHandler(translate_command_from_callback, pattern="^cmd_translate$"),
+            CallbackQueryHandler(translation_mode_selected, pattern="^translate_")
         ],
         states={
             TRANSLATE_TEXT: [
@@ -126,7 +138,10 @@ def main():
                 CallbackQueryHandler(finish_callback, pattern="^finish$")
             ]
         },
-        fallbacks=[CommandHandler("cancel", cancel_translate)]
+        fallbacks=[
+            CommandHandler("cancel", cancel_translate),
+            CallbackQueryHandler(finish_callback, pattern="^finish$")
+        ]
     )
     application.add_handler(translate_handler)
 
@@ -138,15 +153,6 @@ def main():
     application.add_handler(CallbackQueryHandler(random_command_from_callback, pattern="^cmd_random$"))
     application.add_handler(CallbackQueryHandler(finish_callback, pattern="^finish$"))
     application.add_handler(CallbackQueryHandler(another_fact_callback, pattern="^another_fact$"))
-
-    # Talk callbacks
-    application.add_handler(CallbackQueryHandler(personality_selected, pattern="^talk_"))
-
-    # Quiz callbacks
-    application.add_handler(CallbackQueryHandler(topic_selected, pattern="^quiz_topic_"))
-
-    # Translate callbacks
-    application.add_handler(CallbackQueryHandler(translation_mode_selected, pattern="^translate_"))
 
     # Recommendation callbacks
     application.add_handler(CallbackQueryHandler(category_selected, pattern="^rec_cat_"))

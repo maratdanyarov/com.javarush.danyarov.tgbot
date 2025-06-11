@@ -80,11 +80,12 @@ def get_auto_translation_prompt(text: str) -> str:
 
 # Recommendation prompt
 def get_recommendation_prompt(category: str, genre: str,
-                              disliked_items: list = None) -> str:
+                              excluded_items: list = None) -> str:
     """Generate prompt for recommendations."""
     excluded = ""
-    if disliked_items:
-        excluded = f"\n\nDo NOT recommend these items as the user is not interested: {', '.join(disliked_items)}"
+    if excluded_items:
+        excluded = (f"\n\nDo NOT recommend any of these items (already shown or disliked by user):"
+                    f"\n{', '.join(excluded_items)}\n\nPlease provide completely different recommendations.")
 
     if category == 'movies':
         return f"""Recommend 3 {genre} movies. For each movie, provide:

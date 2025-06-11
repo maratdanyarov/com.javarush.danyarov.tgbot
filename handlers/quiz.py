@@ -11,7 +11,7 @@ from config import IMAGES, QUIZ_TOPICS
 logger = logging.getLogger(__name__)
 
 # Conversation states
-QUIZ_ANSWER = 1
+QUIZ_ANSWER = 3
 
 
 async def quiz_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -41,8 +41,11 @@ async def quiz_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-async def quiz_command_from_callback(query, context: ContextTypes.DEFAULT_TYPE):
+async def quiz_command_from_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /quiz command from callback query."""
+    query = update.callback_query
+    await query.answer()
+
     logger.info(f"User {query.from_user.id} started quiz from button")
 
     await query.message.reply_text(

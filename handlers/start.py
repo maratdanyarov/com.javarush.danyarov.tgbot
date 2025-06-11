@@ -2,7 +2,7 @@
 import logging
 import os
 from telegram import Update
-from telegram.ext import ContextTypes
+from telegram.ext import ContextTypes, ConversationHandler
 from utils.keyboards import get_start_keyboard
 from config import IMAGES
 
@@ -72,4 +72,5 @@ What would you like to do next?"""
         text=welcome_text,
         reply_markup=get_start_keyboard()
     )
-    
+
+    return ConversationHandler.END

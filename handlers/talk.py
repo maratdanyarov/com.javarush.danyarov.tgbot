@@ -11,7 +11,7 @@ from config import IMAGES, PERSONALITIES
 logger = logging.getLogger(__name__)
 
 # Conversation states
-TALK_CHAT = 1
+TALK_CHAT = 2
 
 
 async def talk_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
