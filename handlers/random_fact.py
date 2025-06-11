@@ -52,10 +52,22 @@ async def random_command_from_callback(update: Update, context: ContextTypes.DEF
 
     logger.info(f"User {query.from_user.id} requested random fact from button")
 
-    # Send initial message
-    message = await query.message.reply_text(
-        "🎲 Let me find an interesting fact for you..."
-    )
+    # Send initial message with image
+    try:
+        if os.path.exists(IMAGES['random']):
+            message = await query.message.reply_photo(
+                photo=open(IMAGES['random'], 'rb'),
+                caption="🎲 Let me find an interesting fact for you..."
+            )
+        else:
+            message = await query.message.reply_text(
+                "🎲 Let me find an interesting fact for you..."
+            )
+    except Exception as e:
+        logger.error(f"Error sending image: {e}")
+        message = await query.message.reply_text(
+            "🎲 Let me find an interesting fact for you..."
+        )
 
     # Get OpenAI client from context
     openai_client = context.bot_data.get('openai_client')

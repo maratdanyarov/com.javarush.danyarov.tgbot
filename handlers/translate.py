@@ -47,11 +47,27 @@ async def translate_command_from_callback(update: Update, context: ContextTypes.
 
     logger.info(f"User {query.from_user.id} started translator from button")
 
-    await query.message.reply_text(
-        "🌐 **Translator**\n\nChoose translation mode:",
-        reply_markup=get_language_keyboard(),
-        parse_mode='Markdown'
-    )
+    # Send language selection
+    try:
+        if os.path.exists(IMAGES['translate']):
+            await query.message.reply_photo(
+                photo=open(IMAGES['translate'], 'rb'),
+                caption="🌐 **Translator**\n\nChoose translation mode:",
+                reply_markup=get_language_keyboard()
+            )
+        else:
+            await query.message.reply_text(
+                "🌐 **Translator**\n\nChoose translation mode:",
+                reply_markup=get_language_keyboard(),
+                parse_mode='Markdown'
+            )
+    except Exception as e:
+        logger.error(f"Error sending image: {e}")
+        await query.message.reply_text(
+            "🌐 **Translator**\n\nChoose translation mode:",
+            reply_markup=get_language_keyboard(),
+            parse_mode='Markdown'
+        )
 
 
 async def translation_mode_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):

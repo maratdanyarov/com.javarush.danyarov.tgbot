@@ -24,12 +24,14 @@ async def gpt_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if os.path.exists(IMAGES['gpt']):
             await update.message.reply_photo(
                 photo=open(IMAGES['gpt'], 'rb'),
-                caption="🤖 **ChatGPT Interface**\n\nI'm ready to help! Send me any question or message, and I'll provide a thoughtful response.\n\nType your message below:",
+                caption="🤖 **ChatGPT Interface**\n\nI'm ready to help! Send me any question or message, "
+                        "and I'll provide a thoughtful response.\n\nType your message below:",
                 reply_markup=get_finish_keyboard()
             )
         else:
             await update.message.reply_text(
-                "🤖 **ChatGPT Interface**\n\nI'm ready to help! Send me any question or message, and I'll provide a thoughtful response.\n\nType your message below:",
+                "🤖 **ChatGPT Interface**\n\nI'm ready to help! Send me any question or message, "
+                "and I'll provide a thoughtful response.\n\nType your message below:",
                 reply_markup=get_finish_keyboard(),
                 parse_mode='Markdown'
             )
@@ -55,13 +57,29 @@ async def gpt_command_from_callback(update: Update, context: ContextTypes.DEFAUL
     # Set conversation state
     context.user_data['state'] = 'gpt_chat'
 
-    await query.message.reply_text(
-        "🤖 **ChatGPT Interface**\n\nI'm ready to help! "
-        "Send me any question or message, and I'll provide a thoughtful response."
-        "\n\nType your message below:",
-        reply_markup=get_finish_keyboard(),
-        parse_mode='Markdown'
-    )
+    try:
+        if os.path.exists(IMAGES['gpt']):
+            await query.message.reply_photo(
+                photo=open(IMAGES['gpt'], 'rb'),
+                caption="🤖 **ChatGPT Interface**\n\nI'm ready to help! Send me any question or message, "
+                        "and I'll provide a thoughtful response.\n\nType your message below:",
+                reply_markup=get_finish_keyboard()
+            )
+        else:
+            await query.message.reply_text(
+                "🤖 **ChatGPT Interface**\n\nI'm ready to help! Send me any question or message, "
+                "and I'll provide a thoughtful response.\n\nType your message below:",
+                reply_markup=get_finish_keyboard(),
+                parse_mode='Markdown'
+            )
+    except Exception as e:
+        logger.error(f"Error sending image: {e}")
+        await query.message.reply_text(
+            "🤖 **ChatGPT Interface**\n\nI'm ready to help! "
+            "Send me any question or message, and I'll provide a thoughtful response.\n\nType your message below:",
+            reply_markup=get_finish_keyboard(),
+            parse_mode='Markdown'
+        )
 
     return GPT_CHAT
 

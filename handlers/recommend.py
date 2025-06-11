@@ -46,11 +46,27 @@ async def recommend_command_from_callback(update: Update, context: ContextTypes.
 
     logger.info(f"User {query.from_user.id} started recommendations from button")
 
-    await query.message.reply_text(
-        "🎬📚 **Recommendations**\n\nWhat would you like recommendations for?",
-        reply_markup=get_recommendation_category_keyboard(),
-        parse_mode='Markdown'
-    )
+    # Send category selection
+    try:
+        if os.path.exists(IMAGES['recommend']):
+            await query.message.reply_photo(
+                photo=open(IMAGES['recommend'], 'rb'),
+                caption="🎬📚 **Recommendations**\n\nWhat would you like recommendations for?",
+                reply_markup=get_recommendation_category_keyboard()
+            )
+        else:
+            await query.message.reply_text(
+                "🎬📚 **Recommendations**\n\nWhat would you like recommendations for?",
+                reply_markup=get_recommendation_category_keyboard(),
+                parse_mode='Markdown'
+            )
+    except Exception as e:
+        logger.error(f"Error sending image: {e}")
+        await query.message.reply_text(
+            "🎬📚 **Recommendations**\n\nWhat would you like recommendations for?",
+            reply_markup=get_recommendation_category_keyboard(),
+            parse_mode='Markdown'
+        )
 
 
 async def category_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):

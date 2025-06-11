@@ -48,11 +48,26 @@ async def quiz_command_from_callback(update: Update, context: ContextTypes.DEFAU
 
     logger.info(f"User {query.from_user.id} started quiz from button")
 
-    await query.message.reply_text(
-        "🧠 **Quiz Time!**\n\nChoose a topic to test your knowledge:",
-        reply_markup=get_quiz_topics_keyboard(),
-        parse_mode='Markdown'
-    )
+    try:
+        if os.path.exists(IMAGES['quiz']):
+            await query.message.reply_photo(
+                photo=open(IMAGES['quiz'], 'rb'),
+                caption="🧠 **Quiz Time!**\n\nChoose a topic to test your knowledge:",
+                reply_markup=get_quiz_topics_keyboard()
+            )
+        else:
+            await query.message.reply_text(
+                "🧠 **Quiz Time!**\n\nChoose a topic to test your knowledge:",
+                reply_markup=get_quiz_topics_keyboard(),
+                parse_mode='Markdown'
+            )
+    except Exception as e:
+        logger.error(f"Error sending image: {e}")
+        await query.message.reply_text(
+            "🧠 **Quiz Time!**\n\nChoose a topic to test your knowledge:",
+            reply_markup=get_quiz_topics_keyboard(),
+            parse_mode='Markdown'
+        )
 
 
 async def topic_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):

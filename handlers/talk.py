@@ -48,11 +48,27 @@ async def talk_command_from_callback(update: Update, context: ContextTypes.DEFAU
 
     logger.info(f"User {query.from_user.id} started talk feature from button")
 
-    await query.message.reply_text(
-        "💬 **Talk to a Historical Figure**\n\nChoose a personality to chat with:",
-        reply_markup=get_personalities_keyboard(),
-        parse_mode='Markdown'
-    )
+    # Send personality selection
+    try:
+        if os.path.exists(IMAGES['talk']):
+            await query.message.reply_photo(
+                photo=open(IMAGES['talk'], 'rb'),
+                caption="💬 **Talk to a Historical Figure**\n\nChoose a personality to chat with:",
+                reply_markup=get_personalities_keyboard()
+            )
+        else:
+            await query.message.reply_text(
+                "💬 **Talk to a Historical Figure**\n\nChoose a personality to chat with:",
+                reply_markup=get_personalities_keyboard(),
+                parse_mode='Markdown'
+            )
+    except Exception as e:
+        logger.error(f"Error sending image: {e}")
+        await query.message.reply_text(
+            "💬 **Talk to a Historical Figure**\n\nChoose a personality to chat with:",
+            reply_markup=get_personalities_keyboard(),
+            parse_mode='Markdown'
+        )
 
 
 async def personality_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
