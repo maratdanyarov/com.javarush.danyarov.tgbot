@@ -183,50 +183,6 @@ async def change_personality(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     return ConversationHandler.END
 
-
-async def cancel_talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Cancel talk conversation."""
-    context.user_data.pop('state', None)
-    return ConversationHandler.END
-    # Keep only last 10 exchanges
-    if len(context.user_data['conversation_history']) > 20:
-        context.user_data['conversation_history'] = context.user_data['conversation_history'][-20:]
-
-    # Save to database
-    db = context.bot_data.get('database')
-    await db.save_conversation_context(
-        update.effective_user.id,
-        personality_id,
-        json.dumps(context.user_data['conversation_history'])
-    )
-
-    # Send response
-    await update.message.reply_text(
-        response,
-        reply_markup=get_talk_finish_keyboard()
-    )
-
-    return TALK_CHAT
-
-
-async def change_personality(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle change personality button."""
-    query = update.callback_query
-    await query.answer()
-
-    # Clear conversation
-    context.user_data.clear()
-
-    # Show personality selection
-    await query.message.reply_text(
-        "💬 **Choose a new personality to chat with:**",
-        reply_markup=get_personalities_keyboard(),
-        parse_mode='Markdown'
-    )
-
-    return ConversationHandler.END
-
-
 async def cancel_talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Cancel talk conversation."""
     context.user_data.pop('state', None)

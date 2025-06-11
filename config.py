@@ -1,4 +1,4 @@
-"""Configureation module for the Telegram Chatgpt bot."""
+"""Configuration module for the Telegram Chatgpt bot."""
 import os
 import logging
 from dotenv import load_dotenv

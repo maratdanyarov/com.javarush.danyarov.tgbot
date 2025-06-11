@@ -48,7 +48,7 @@ async def random_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def random_command_from_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /random command from callback query."""
     query = update.callback_query
-    query.answer()
+    await query.answer()
 
     logger.info(f"User {query.from_user.id} requested random fact from button")
 
